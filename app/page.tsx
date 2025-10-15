@@ -138,7 +138,7 @@ export default function Home() {
   };
 
   const createSimpleScreenshot = async (targetUrl: string) => {
-    const html2canvas = await loadHtml2Canvas();
+    const html2canvas = await loadHtml2Canvas() as any;
     
     const iframe = document.createElement('iframe');
     iframe.src = targetUrl;
