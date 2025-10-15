@@ -1,6 +1,6 @@
 // API route para captura de screenshots usando Puppeteer
 import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+import chromium from 'chrome-aws-lambda';
 
 export async function POST(request) {
   let browser = null;
@@ -21,19 +21,18 @@ export async function POST(request) {
     console.log('Lanzando navegador...');
     
     // Detectar si estamos en Vercel (producción) o desarrollo local
-    const isVercel = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
+    const isProduction = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
     
-    console.log('Entorno:', isVercel ? 'Vercel/Producción' : 'Desarrollo Local');
+    console.log('Entorno:', isProduction ? 'Producción (Vercel/Lambda)' : 'Desarrollo Local');
     
-    // Configuración para Vercel
-    if (isVercel) {
-      const executablePath = await chromium.executablePath();
-      console.log('Usando Chromium de @sparticuz en:', executablePath);
+    // Configuración para producción (Vercel)
+    if (isProduction) {
+      console.log('Usando chrome-aws-lambda para producción');
       
       browser = await puppeteer.launch({
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
-        executablePath: executablePath,
+        executablePath: await chromium.executablePath,
         headless: chromium.headless,
         ignoreHTTPSErrors: true
       });
