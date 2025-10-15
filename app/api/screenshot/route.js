@@ -1,6 +1,6 @@
 // API route para captura de screenshots usando Puppeteer
 import puppeteer from 'puppeteer-core';
-import chromium from 'chrome-aws-lambda';
+import chromium from '@sparticuz/chromium-min';
 
 export async function POST(request) {
   let browser = null;
@@ -27,12 +27,12 @@ export async function POST(request) {
     
     // Configuración para producción (Vercel)
     if (isProduction) {
-      console.log('Usando chrome-aws-lambda para producción');
+      console.log('Usando @sparticuz/chromium-min para producción');
       
       browser = await puppeteer.launch({
-        args: chromium.args,
+        args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
         defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath,
+        executablePath: await chromium.executablePath(),
         headless: chromium.headless,
         ignoreHTTPSErrors: true
       });
