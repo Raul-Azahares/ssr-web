@@ -29,10 +29,22 @@ export async function POST(request) {
     if (isProduction) {
       console.log('Usando @sparticuz/chromium-min para producción');
       
+      // Obtener la ruta del ejecutable de Chromium
+      let executablePath;
+      try {
+        executablePath = await chromium.executablePath(
+          'https://github.com/Sparticuz/chromium/releases/download/v131.0.0/chromium-v131.0.0-pack.tar'
+        );
+        console.log('Chromium executable path:', executablePath);
+      } catch (error) {
+        console.error('Error obteniendo executablePath:', error);
+        throw error;
+      }
+      
       browser = await puppeteer.launch({
         args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
         defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
+        executablePath: executablePath,
         headless: chromium.headless,
         ignoreHTTPSErrors: true
       });
