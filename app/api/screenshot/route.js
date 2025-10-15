@@ -20,29 +20,47 @@ export async function POST(request) {
     // Lanzar navegador
     console.log('Lanzando navegador...');
     
-    // Detectar si estamos en desarrollo o producción
-    const isDev = process.env.NODE_ENV === 'development';
+    // Detectar si estamos en Vercel (producción) o desarrollo local
+    const isVercel = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME;
     
-    browser = await puppeteer.launch({
-      args: isDev ? [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--disable-gpu',
-        '--window-size=1920,1080'
-      ] : chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: isDev 
-        ? process.platform === 'win32'
-          ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
-          : process.platform === 'darwin'
-          ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-          : '/usr/bin/chromium-browser'
-        : await chromium.executablePath(),
-      headless: isDev ? 'new' : chromium.headless,
-      ignoreHTTPSErrors: true
-    });
+    console.log('Entorno:', isVercel ? 'Vercel/Producción' : 'Desarrollo Local');
+    
+    // Configuración para Vercel
+    if (isVercel) {
+      const executablePath = await chromium.executablePath();
+      console.log('Usando Chromium de @sparticuz en:', executablePath);
+      
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: executablePath,
+        headless: chromium.headless,
+        ignoreHTTPSErrors: true
+      });
+    } else {
+      // Configuración para desarrollo local
+      const localChromePath = process.platform === 'win32'
+        ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+        : process.platform === 'darwin'
+        ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        : '/usr/bin/chromium-browser';
+      
+      console.log('Usando Chrome/Chromium local en:', localChromePath);
+      
+      browser = await puppeteer.launch({
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--disable-gpu',
+          '--window-size=1920,1080'
+        ],
+        executablePath: localChromePath,
+        headless: 'new',
+        ignoreHTTPSErrors: true
+      });
+    }
 
     const page = await browser.newPage();
     
