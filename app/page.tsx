@@ -328,7 +328,7 @@ export default function Home() {
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text'
         }}>
-          🛡️ Web Content Protector
+          🛡️ Web Content Protector v1.1
         </h1>
         
         <p style={{
