@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo "🔍 Verificando logs de Vercel..."
+echo ""
+echo "Para ver los logs en Vercel Dashboard:"
+echo "1. Ve a: https://vercel.com/dashboard"
+echo "2. Selecciona tu proyecto 'ssr-web'"
+echo "3. Click en 'Deployments' → último deployment"
+echo "4. Ve a la pestaña 'Functions' para ver logs de las API routes"
+echo "5. Ve a 'Runtime Logs' para logs en tiempo real"
+echo ""
+echo "Para ver logs desde CLI:"
+echo "vercel logs https://ssr-web-lyart.vercel.app"
+echo ""
+echo "Para ver logs en tiempo real:"
+echo "vercel logs https://ssr-web-lyart.vercel.app --follow"

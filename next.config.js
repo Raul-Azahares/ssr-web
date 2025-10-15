@@ -35,6 +35,11 @@ const nextConfig = {
       },
     ];
   },
+  // Transpile puppeteer-core para que funcione con Next.js
+  transpilePackages: ['puppeteer-core'],
+  experimental: {
+    serverComponentsExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],
+  },
 };
 
 module.exports = nextConfig;

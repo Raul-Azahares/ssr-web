@@ -1,5 +1,6 @@
 // API route para captura de screenshots usando Puppeteer
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 
 export async function POST(request) {
   let browser = null;
@@ -18,16 +19,29 @@ export async function POST(request) {
 
     // Lanzar navegador
     console.log('Lanzando navegador...');
+    
+    // Detectar si estamos en desarrollo o producción
+    const isDev = process.env.NODE_ENV === 'development';
+    
     browser = await puppeteer.launch({
-      headless: 'new',
-      args: [
+      args: isDev ? [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--disable-accelerated-2d-canvas',
         '--disable-gpu',
         '--window-size=1920,1080'
-      ]
+      ] : chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: isDev 
+        ? process.platform === 'win32'
+          ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+          : process.platform === 'darwin'
+          ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+          : '/usr/bin/chromium-browser'
+        : await chromium.executablePath(),
+      headless: isDev ? 'new' : chromium.headless,
+      ignoreHTTPSErrors: true
     });
 
     const page = await browser.newPage();
