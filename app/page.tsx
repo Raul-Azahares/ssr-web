@@ -298,46 +298,113 @@ export default function Home() {
   };
 
   return (
-    <div style={{
+    <>
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) translateX(0px); }
+          50% { transform: translateY(-20px) translateX(10px); }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
+      <div style={{
       minHeight: '100vh',
       padding: '2rem',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif'
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
+      {/* Animated background elements */}
       <div style={{
-        maxWidth: '1200px',
+        position: 'absolute',
+        top: '-50%',
+        right: '-10%',
+        width: '500px',
+        height: '500px',
+        background: 'radial-gradient(circle, rgba(240,147,251,0.3) 0%, transparent 70%)',
+        borderRadius: '50%',
+        filter: 'blur(60px)',
+        animation: 'float 6s ease-in-out infinite'
+      }} />
+      <div style={{
+        position: 'absolute',
+        bottom: '-30%',
+        left: '-10%',
+        width: '400px',
+        height: '400px',
+        background: 'radial-gradient(circle, rgba(102,126,234,0.3) 0%, transparent 70%)',
+        borderRadius: '50%',
+        filter: 'blur(60px)',
+        animation: 'float 8s ease-in-out infinite reverse'
+      }} />
+      <div style={{
+        maxWidth: protectedUrl ? '1400px' : '900px',
         width: '100%',
-        background: 'rgba(255, 255, 255, 0.95)',
-        borderRadius: '20px',
+        background: 'rgba(255, 255, 255, 0.98)',
+        borderRadius: '24px',
         padding: '3rem',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)',
-        backdropFilter: 'blur(10px)'
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255, 255, 255, 0.3)',
+        position: 'relative',
+        zIndex: 1,
+        transition: 'max-width 0.3s ease'
       }}>
-        <h1 style={{
-          fontSize: '2.5rem',
-          fontWeight: '700',
+        <div style={{
           textAlign: 'center',
-          marginBottom: '1rem',
-          background: 'linear-gradient(135deg, #667eea, #764ba2)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text'
+          marginBottom: '3rem'
         }}>
-          🛡️ Web Content Protector v1.1
-        </h1>
-        
-        <p style={{
-          fontSize: '1.2rem',
-          textAlign: 'center',
-          color: '#666',
-          marginBottom: '3rem',
-          lineHeight: '1.6'
-        }}>
-          Protect any web page from copying, right-click and download
-        </p>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.5rem 1.5rem',
+            background: 'linear-gradient(135deg, rgba(245,87,108,0.1) 0%, rgba(240,147,251,0.1) 100%)',
+            borderRadius: '50px',
+            marginBottom: '1.5rem',
+            border: '1px solid rgba(245,87,108,0.2)'
+          }}>
+            <span style={{ fontSize: '1.2rem' }}>🛡️</span>
+            <span style={{
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              color: '#f5576c',
+              letterSpacing: '1px',
+              textTransform: 'uppercase'
+            }}>
+              Advanced Protection
+            </span>
+          </div>
+          
+          <h1 style={{
+            fontSize: '3rem',
+            fontWeight: '800',
+            marginBottom: '1rem',
+            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            lineHeight: '1.2'
+          }}>
+            Web Content Protector
+          </h1>
+          
+          <p style={{
+            fontSize: '1.15rem',
+            color: '#64748b',
+            margin: 0,
+            fontWeight: '400',
+            lineHeight: '1.6'
+          }}>
+            Capture and protect any website with server-side screenshot technology
+          </p>
+        </div>
         
         {!protectedUrl ? (
           <div>
@@ -355,13 +422,17 @@ export default function Home() {
                   placeholder="https://ntsprint.com/"
                   style={{
                     flex: 1,
-                    padding: '1rem 1.5rem',
-                    border: '2px solid #e1e5e9',
-                    borderRadius: '12px',
+                    padding: '1.25rem 1.75rem',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '16px',
                     fontSize: '1rem',
                     transition: 'all 0.3s ease',
-                    background: 'white'
+                    background: 'white',
+                    outline: 'none',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
                   }}
+                  onFocus={(e) => e.target.style.borderColor = '#f5576c'}
+                  onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                   disabled={isLoading}
                   required
                 />
@@ -375,44 +446,37 @@ export default function Home() {
               }}>
                 <button 
                   type="button"
-                  onClick={(e) => handleUrlSubmit(e, 'iframe')}
-                  style={{
-                    padding: '1rem 2rem',
-                    background: 'linear-gradient(135deg, #667eea, #764ba2)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    whiteSpace: 'nowrap',
-                    minWidth: '200px'
-                  }}
-                  disabled={isLoading || !url.trim()}
-                >
-                  {isLoading && protectionMode === 'iframe' ? '🔄' : '🛡️'} Protect (Iframe)
-                </button>
-                
-                <button 
-                  type="button"
                   onClick={(e) => handleUrlSubmit(e, 'screenshot')}
                   style={{
-                    padding: '1rem 2rem',
-                    background: 'linear-gradient(135deg, #f093fb, #f5576c)',
+                    padding: '1.25rem 3rem',
+                    background: isLoading ? '#94a3b8' : 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
                     color: 'white',
                     border: 'none',
-                    borderRadius: '12px',
-                    fontSize: '1rem',
+                    borderRadius: '16px',
+                    fontSize: '1.05rem',
                     fontWeight: '600',
-                    cursor: 'pointer',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
                     transition: 'all 0.3s ease',
                     whiteSpace: 'nowrap',
-                    minWidth: '200px'
+                    minWidth: '240px',
+                    boxShadow: isLoading ? 'none' : '0 10px 25px -5px rgba(245, 87, 108, 0.4)',
+                    transform: isLoading ? 'scale(0.98)' : 'scale(1)'
                   }}
+                  onMouseEnter={(e) => !isLoading && (e.currentTarget.style.transform = 'translateY(-2px)', e.currentTarget.style.boxShadow = '0 15px 30px -5px rgba(245, 87, 108, 0.5)')}
+                  onMouseLeave={(e) => !isLoading && (e.currentTarget.style.transform = 'translateY(0)', e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(245, 87, 108, 0.4)')}
                   disabled={isLoading || !url.trim()}
                 >
-                  {isLoading && protectionMode === 'screenshot' ? '🔄' : '📸'} Protect (Advance)
+                  {isLoading ? (
+                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                      <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⚡</span>
+                      Processing...
+                    </span>
+                  ) : (
+                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                      <span>🛡️</span>
+                      Protect Content
+                    </span>
+                  )}
                 </button>
               </div>
               {error && (
@@ -430,57 +494,61 @@ export default function Home() {
             </form>
             
             <div style={{
-              background: '#f8f9fa',
-              padding: '2rem',
-              borderRadius: '12px',
-              border: '1px solid #e1e5e9'
+              background: 'linear-gradient(135deg, rgba(245,87,108,0.05) 0%, rgba(240,147,251,0.05) 100%)',
+              padding: '2.5rem',
+              borderRadius: '20px',
+              border: '1px solid rgba(245,87,108,0.15)'
             }}>
-              <h3 style={{
-                margin: '0 0 1rem 0',
-                color: '#333',
-                fontSize: '1.2rem'
-              }}>
-                Available Protection Modes:
-              </h3>
-              
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '1rem'
+                display: 'flex',
+                justifyContent: 'center'
               }}>
                 <div style={{
                   background: 'white',
-                  padding: '1.5rem',
-                  borderRadius: '8px',
-                  border: '2px solid #667eea'
+                  padding: '2rem',
+                  borderRadius: '16px',
+                  border: '2px solid #f5576c',
+                  maxWidth: '500px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                 }}>
-                  <h4 style={{ margin: '0 0 0.5rem 0', color: '#667eea' }}>
-                    🛡️ Iframe Mode (Basic)
-                  </h4>
-                  <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '0.9rem', color: '#666' }}>
-                    <li>Right-click blocking</li>
-                    <li>Text selection disabled</li>
-                    <li>DevTools protection</li>
-                    <li>Keyboard shortcuts blocked</li>
-                    <li>Works with most websites</li>
-                  </ul>
-                </div>
-                
-                <div style={{
-                  background: 'white',
-                  padding: '1.5rem',
-                  borderRadius: '8px',
-                  border: '2px solid #f5576c'
-                }}>
-                  <h4 style={{ margin: '0 0 0.5rem 0', color: '#f5576c' }}>
-                    📸 Advance Mode
-                  </h4>
-                  <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '0.9rem', color: '#666' }}>
-                    <li>Server-side screenshot capture</li>
-                    <li>Works with ANY website</li>
-                    <li>No HTML code accessible</li>
-                    <li>Maximum protection</li>
-                    <li>Bypasses iframe restrictions</li>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    marginBottom: '1rem'
+                  }}>
+                    <span style={{ fontSize: '2rem' }}>🚀</span>
+                    <h4 style={{ margin: 0, color: '#1e293b', fontSize: '1.3rem', fontWeight: '700' }}>
+                      Advanced Protection Mode
+                    </h4>
+                  </div>
+                  <ul style={{ 
+                    margin: 0, 
+                    paddingLeft: 0, 
+                    fontSize: '0.95rem', 
+                    color: '#475569',
+                    listStyle: 'none'
+                  }}>
+                    <li style={{ padding: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ color: '#f5576c', fontSize: '1.2rem' }}>✓</span>
+                      Server-side screenshot capture with Playwright
+                    </li>
+                    <li style={{ padding: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ color: '#f5576c', fontSize: '1.2rem' }}>✓</span>
+                      Works with ANY website
+                    </li>
+                    <li style={{ padding: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ color: '#f5576c', fontSize: '1.2rem' }}>✓</span>
+                      No HTML source code accessible
+                    </li>
+                    <li style={{ padding: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ color: '#f5576c', fontSize: '1.2rem' }}>✓</span>
+                      Maximum content protection
+                    </li>
+                    <li style={{ padding: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ color: '#f5576c', fontSize: '1.2rem' }}>✓</span>
+                      Bypasses all iframe restrictions
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -501,7 +569,7 @@ export default function Home() {
               marginBottom: '1rem'
             }}>
               <h2 style={{ margin: 0, color: '#333' }}>
-                Protected Content - {protectionMode === 'screenshot' ? 'Screenshot + Watermark' : 'Iframe'}
+                Protected Content
               </h2>
               <button 
                 onClick={handleBack}
@@ -557,15 +625,6 @@ export default function Home() {
                   }}
                   onContextMenu={(e) => e.preventDefault()}
                 />
-                <div style={{
-                  background: '#e74c3c',
-                  color: 'white',
-                  padding: '0.5rem',
-                  fontSize: '0.9rem',
-                  fontWeight: '600'
-                }}>
-                  📸 Content Protected as Screenshot with Invisible Watermarking
-                </div>
               </div>
             ) : protectionMode === 'screenshot' && isLoading ? (
               <div style={{
@@ -584,30 +643,15 @@ export default function Home() {
                   borderRadius: '50%',
                   animation: 'spin 1s linear infinite',
                   margin: '0 auto 1.5rem'
-                }}></div>
-                <h3 style={{ 
-                  color: 'white', 
-                  margin: '0 0 0.5rem 0',
-                  fontSize: '1.5rem',
-                  fontWeight: '600'
-                }}>
-                  📸 Capturing Screenshot...
-                </h3>
-                <p style={{ 
-                  color: 'rgba(255, 255, 255, 0.9)', 
-                  margin: 0,
-                  fontSize: '1rem'
-                }}>
-                  Please wait while we capture and protect the content
-                </p>
-                <style dangerouslySetInnerHTML={{
-                  __html: `
-                    @keyframes spin {
-                      0% { transform: rotate(0deg); }
-                      100% { transform: rotate(360deg); }
-                    }
-                  `
                 }} />
+                <p style={{
+                  color: 'white',
+                  fontSize: '1.2rem',
+                  fontWeight: '600',
+                  margin: 0
+                }}>
+                  Loading...
+                </p>
               </div>
             ) : (
               <div style={{
@@ -777,5 +821,6 @@ export default function Home() {
         )}
       </div>
     </div>
+    </>
   );
 }
