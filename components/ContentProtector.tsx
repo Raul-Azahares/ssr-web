@@ -13,6 +13,7 @@ export function ContentProtector({ url, onBack }: ContentProtectorProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [contentImage, setContentImage] = useState<string>('');
+  const [useIframe, setUseIframe] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -117,60 +118,136 @@ export function ContentProtector({ url, onBack }: ContentProtectorProps) {
     try {
       setIsLoading(true);
       setError('');
+      setUseIframe(false);
+      setContentImage('');
       
-      // Simulate content loading
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Intentar con iframe directo primero
+      console.log('Intentando cargar con iframe directo...');
+      setUseIframe(true);
       
-      // Convert content to image
-      await convertToImage();
+      // Esperar a que el iframe se renderice
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const iframeSuccess = await tryIframeLoad();
+      
+      if (iframeSuccess) {
+        console.log('Iframe cargado exitosamente (directo)');
+        setIsLoading(false);
+        return;
+      }
+      
+      // Si iframe falla, usar proxy para obtener HTML y mostrarlo en iframe
+      console.log('Iframe falló, usando proxy para obtener HTML...');
+      // Mantener useIframe en true para que el iframe siga visible
+      await convertToImageWithProxy();
+      setIsLoading(false);
       
     } catch (err) {
+      console.error('Error en loadContent:', err);
       setError('Error loading content. Please verify that the URL is accessible.');
-    } finally {
+      setUseIframe(false);
       setIsLoading(false);
     }
   };
 
-  const convertToImage = async () => {
+  const tryIframeLoad = async (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (!iframeRef.current) {
+        console.log('iframeRef.current no existe');
+        resolve(false);
+        return;
+      }
+
+      const iframe = iframeRef.current;
+      let loaded = false;
+
+      const onLoad = () => {
+        console.log('Iframe onLoad disparado');
+        loaded = true;
+        cleanup();
+        resolve(true);
+      };
+
+      const onError = () => {
+        console.log('Iframe onError disparado');
+        cleanup();
+        resolve(false);
+      };
+
+      const cleanup = () => {
+        iframe.removeEventListener('load', onLoad);
+        iframe.removeEventListener('error', onError);
+      };
+
+      iframe.addEventListener('load', onLoad);
+      iframe.addEventListener('error', onError);
+      
+      console.log('Configurando iframe.src =', url);
+      iframe.src = url;
+
+      // Timeout después de 3 segundos
+      setTimeout(() => {
+        if (!loaded) {
+          console.log('Timeout del iframe, considerando fallido');
+          cleanup();
+          resolve(false);
+        }
+      }, 3000);
+    });
+  };
+
+  const convertToImageWithProxy = async () => {
     try {
-      // Create temporary iframe to load content
-      const tempIframe = document.createElement('iframe');
-      tempIframe.src = url;
-      tempIframe.style.position = 'absolute';
-      tempIframe.style.left = '-9999px';
-      tempIframe.style.top = '-9999px';
-      tempIframe.style.width = '1920px';
-      tempIframe.style.height = '1080px';
-      document.body.appendChild(tempIframe);
-
-      // Wait for content to load
-      await new Promise((resolve) => {
-        tempIframe.onload = resolve;
+      // Obtener HTML a través del proxy
+      console.log('Obteniendo HTML del proxy...');
+      const response = await fetch('/api/proxy-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
       });
 
-      // Wait a bit more for complete rendering
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      if (!response.ok) {
+        throw new Error('Proxy request failed');
+      }
 
-      // Convert to canvas using html2canvas
-      const canvas = await html2canvas(tempIframe.contentDocument?.body || tempIframe, {
-        allowTaint: true,
-        useCORS: true,
-        scale: 0.5, // Reduce size for better performance
-        width: 1920,
-        height: 1080,
-      });
+      const data = await response.json();
+      
+      if (!data.success || !data.content) {
+        throw new Error('No content received from proxy');
+      }
 
-      // Convert canvas to image
-      const imageDataUrl = canvas.toDataURL('image/png');
-      setContentImage(imageDataUrl);
+      console.log('HTML recibido, mostrando en iframe protegido...');
 
-      // Clean up temporary iframe
-      document.body.removeChild(tempIframe);
+      // Usar srcdoc en lugar de blob URL para mejor compatibilidad
+      if (!iframeRef.current) {
+        throw new Error('iframeRef no disponible');
+      }
+
+      const iframe = iframeRef.current;
+      
+      // Usar srcdoc - es la única forma de que los interceptores funcionen
+      iframe.srcdoc = data.content;
+      
+      iframe.onload = () => {
+        console.log('[ContentProtector] Iframe loaded with srcdoc');
+        
+        // Verificar que los interceptores estén activos
+        try {
+          const iframeWindow = iframe.contentWindow;
+          if (iframeWindow) {
+            console.log('[ContentProtector] Iframe window accessible');
+          }
+        } catch (e) {
+          console.error('[ContentProtector] Cannot access iframe window:', e);
+        }
+      };
+
+      // Marcar que estamos usando iframe con contenido del proxy
+      setUseIframe(true);
 
     } catch (err) {
-      console.error('Error converting to image:', err);
-      // If conversion fails, show error message
-      setError('Could not load content. The page may have CORS restrictions.');
+      console.error('Error en convertToImageWithProxy:', err);
+      throw err;
     }
   };
 
@@ -213,7 +290,20 @@ export function ContentProtector({ url, onBack }: ContentProtectorProps) {
           </div>
         )}
 
-        {contentImage && !isLoading && !error && (
+        {!isLoading && !error && useIframe && !contentImage && (
+          <div className={styles.protectedContent}>
+            <iframe
+              ref={iframeRef}
+              className={styles.protectedIframe}
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-top-navigation-by-user-activation allow-downloads allow-popups-to-escape-sandbox"
+              referrerPolicy="no-referrer"
+              title="Protected content"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            />
+          </div>
+        )}
+
+        {!isLoading && !error && contentImage && (
           <div className={styles.protectedContent}>
             <img
               src={contentImage}
@@ -226,7 +316,7 @@ export function ContentProtector({ url, onBack }: ContentProtectorProps) {
             />
             <div className={styles.overlay}>
               <div className={styles.protectionNotice}>
-                🛡️ Content protected against copying and downloading
+                🛡️ Content protected - Screenshot mode
               </div>
             </div>
           </div>

@@ -29,16 +29,28 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;",
+            value: "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src * data:; connect-src * ws: wss:; frame-src *;",
           },
         ],
       },
     ];
   },
-  // Transpile puppeteer-core para que funcione con Next.js
-  transpilePackages: ['puppeteer-core'],
+  // Transpile puppeteer-core y playwright-core para que funcione con Next.js
+  transpilePackages: ['puppeteer-core', 'playwright-core'],
   experimental: {
-    serverComponentsExternalPackages: ['puppeteer-core', '@sparticuz/chromium'],
+    serverComponentsExternalPackages: [
+      'puppeteer-core', 
+      '@sparticuz/chromium',
+      'playwright-core',
+      'chromium-bidi'
+    ],
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      // Excluir módulos opcionales de Playwright que no necesitamos
+      config.externals = [...config.externals, 'electron', 'chromium-bidi'];
+    }
+    return config;
   },
 };
 

@@ -38,10 +38,10 @@ export default function Home() {
 
   const captureScreenshotWithPuppeteer = async (targetUrl: string) => {
     try {
-      console.log('Capturando screenshot con Puppeteer para:', targetUrl);
+      console.log('Capturando screenshot con Playwright para:', targetUrl);
       setIsLoading(true);
       
-      const response = await fetch('/api/screenshot', {
+      const response = await fetch('/api/screenshot-playwright', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,14 +50,12 @@ export default function Home() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        console.log('Screenshot capturado exitosamente');
-        if (data.success && data.image) {
-          setScreenshotImage(data.image);
-          setError('');
-        } else {
-          setError('Error al capturar el screenshot');
-        }
+        // La respuesta es una imagen directamente
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        console.log('Screenshot capturado exitosamente con Playwright');
+        setScreenshotImage(imageUrl);
+        setError('');
       } else {
         const errorData = await response.json();
         console.error('Error en screenshot API:', errorData);
@@ -622,7 +620,7 @@ export default function Home() {
                 {proxyContent ? (
                   <iframe
                     srcDoc={proxyContent}
-                    sandbox="allow-same-origin allow-scripts allow-forms"
+                    sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
                     style={{
                       width: '100%',
                       height: '600px',
